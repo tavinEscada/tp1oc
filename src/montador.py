@@ -16,7 +16,6 @@ def indentificaComando(instrucao, c):
     c.rs2 = ''
     c.funct7 = ''
     c.opcode = ''
-    c.immediate = ''
 
     match instrucao[0]:
         case 'add' | 'beq' | 'addi' | 'lb' | 'sb' | 'sub':
@@ -51,7 +50,7 @@ def indentificaComando(instrucao, c):
             c.funct7 = '0100000'
 
     match instrucao[0]:
-        case 'add':
+        case 'add' | 'and' | 'or' | 'slr' | 'sll' | 'sub' | 'xor':
             c.opcode = '0110011'
 
         case 'beq' | 'bne':
@@ -60,9 +59,22 @@ def indentificaComando(instrucao, c):
         case 'lb' | 'lh' | 'lw':
             c.opcode = '0000011'
 
+        case 'sb' | 'sw' | 'sh':
+            c.opcode = '0100011'
+
+        case 'andi' | 'ori' | 'addi':
+            c.opcode = '0010011'
+
     
+    for i in range(3):
+        instrucao[i+1] = instrucao[i+1].replace("x", "")
 
+    if(c.tipo == 'r'):
 
+        c.rd = format(int(instrucao[1]), '05b')
+        c.rs1 = format(int(instrucao[2]), '05b')
+        c.rs2 = format(int(instrucao[3]), '05b')
+    
 
 #ler nome do arquivo
 nomeArquivo = input("")
@@ -94,7 +106,7 @@ for linha in vetInstrucoes:
             #identifica inst
             
 
-        case 'addi' | 'andi' | 'ori' | 'li' | 'lw' | 'lh':
+        case 'addi' | 'andi' | 'ori' | 'lb' | 'lw' | 'lh':
             
             c.tipo = 'i'
 
@@ -109,5 +121,5 @@ for linha in vetInstrucoes:
 
     indentificaComando(instrucao, c)
     if(c.tipo == 'r'):
-        print(c.funct7 + "xxxxxx" + c.funct3 + "xxx" + c.opcode)
+        print(c.funct7 + c.rs2 + c.rs1 + c.funct3 + c.rd + c.opcode)
 
