@@ -14,9 +14,10 @@ vetInstrucoes = instrucoes.split('\n')
 #dividir cada linha com , ou ' '
 for linha in vetInstrucoes:
     
-    instrucao = linha.split()
+    instrucao = linha.replace(",", "")
+    instrucao = instrucao.split()
 
-    print(linha.split(" "))
+    #print(instrucao)
 
     #definir formato a partir da primeira palavra
     match instrucao[0]:
@@ -38,8 +39,4 @@ for linha in vetInstrucoes:
         case _:
             #B
             print("B")
-            
-            
 
-
-#
