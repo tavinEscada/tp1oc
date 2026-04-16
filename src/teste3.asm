@@ -3,6 +3,3 @@ add x6, x0, x2
 sub x3, x6, x2
 xor x4, x2, x3
 srl x0, x2, x2
-sw x2, x1, 4
-bne x1, x5, 40
-addi x1, x1, 3

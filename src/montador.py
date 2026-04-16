@@ -11,6 +11,9 @@ class Comando:
         self.opcode = ''
         self.immediate = ''
 
+def binario(n, bits):
+    return format(n & (2**bits - 1), f'0{bits}b')
+
 def indentificaComando(instrucao, c):
     
 
@@ -18,7 +21,7 @@ def indentificaComando(instrucao, c):
         case 'add' | 'beq' | 'addi' | 'lb' | 'sb' | 'sub':
             c.funct3 = '000'
 
-        case 'lh' | 'sh' | 'sll':
+        case 'lh' | 'sh' | 'sll' | 'bne':
             c.funct3 = '001'
 
         case 'lw' | 'sw':
@@ -75,32 +78,28 @@ def indentificaComando(instrucao, c):
         instrucao[3].replace("x", "")
         c.rs2 = format(int(instrucao[3]), '05b')
     '''
-    def regBin(token):
-        return format(int(token.replace("x", "")), '05b')
+    for i in range (1, 4):
+        instrucao[i].replace("x", "")
+        
     
     if c.tipo == 'r':
-        # add rd, rs1, rs2
-        c.rd  = regBin(instrucao[1])
-        c.rs1 = regBin(instrucao[2])
-        c.rs2 = regBin(instrucao[3])
+        c.rd  = format(int(instrucao[1]), "05b")
+        c.rs1 = format(int(instrucao[2]), "05b")
+        c.rs2 = format(int(instrucao[3]), "05b")
 
     elif c.tipo == 'i':
-        # addi rd, rs1, imm   OU   lw rd, imm(rs1)
-        c.rd  = regBin(instrucao[1])
-        c.rs1 = regBin(instrucao[2])
-        c.immediate = format(int(instrucao[3]), '012b')
+        c.rd  = format(int(instrucao[1]), "05b")
+        c.rs1 = format(int(instrucao[2]), "05b")
+        c.immediate = binario(int(instrucao[3]), 12)
 
     elif c.tipo == 's':
-        # sw rs2, imm(rs1)    — o que é armazenado é rs2; base é rs1
-        c.rs2 = regBin(instrucao[1])
-        c.rs1 = regBin(instrucao[2])
+        c.rs2 = format(int(instrucao[1]), "05b")
+        c.rs1 = format(int(instrucao[2]), "05b")
         c.immediate = format(int(instrucao[3]), '012b')
 
     elif c.tipo == 'b':
-        # beq rs1, rs2, imm
-        c.rs1 = regBin(instrucao[1])
-        c.rs2 = regBin(instrucao[2])
-        # imediato de 13 bits (bit 0 implícito = 0)   FIX 6
+        c.rs1 = format(int(instrucao[1]), "05b")
+        c.rs2 = format(int(instrucao[2]), "05b")
         c.immediate = format(int(instrucao[3]), '013b')
 
 #ler nome do arquivo
@@ -130,13 +129,9 @@ for linha in vetInstrucoes:
             
             c.tipo = 'r'
 
-            #identifica inst
-            
-
         case 'addi' | 'andi' | 'ori' | 'lb' | 'lw' | 'lh':
             
             c.tipo = 'i'
-
 
         case 'sw' | 'sh' | 'sb':
             
@@ -151,15 +146,41 @@ for linha in vetInstrucoes:
     if(c.tipo == 'r'):
         print(c.funct7 + c.rs2 + c.rs1 + c.funct3 + c.rd, end="")
     elif(c.tipo == 's'):
+        i = 11
+        while(i >= 5):
+            print(c.immediate[i], end="")
+            i = i - 1
+
+        print(c.rs2 + c.rs1 + c.funct3 + c.immediate[4:0], end="")
         
-        print(c.immediate[11:5], c.rs2, c.rs1, c.funct3, c.immediate[4:0], end="")
+        i = 4
+
+        while(i >= 0):
+            print(c.immediate[i], end="")
+            i = i - 1
+        
 
     elif(c.tipo == 'i'):
         
-        print(c.immediate[11:0], c.rs1, c.funct3, c.rd, end="")
+        print(c.immediate + c.rs1 + c.funct3 + c.rd, end="")
 
     else:
-        print(c.immediate[12], c.immediate[10:5], c.rs2, c.rs1, c.funct3, c.immediate[4:1], c.immediate[11], end="")
+        print(c.immediate[12], end="")
+        i = 10
+
+        while(i >= 5):
+            print(c.immediate[i], end="")
+            i = i - 1
+
+        print(c.rs2 + c.rs1 + c.funct3, end="")
+
+        i = 4
+
+        while(i >= 1):
+            print(c.immediate[i], end="")
+            i = i - 1
+
+        print(c.immediate[11], end="")
 
         
     print(c.opcode)
