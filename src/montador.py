@@ -1,21 +1,18 @@
 import re
 
 class Comando:
-    def _innit_(self, funct7, rs2, rs1, funct3, rd, opcode, immediate, tipo):
-        self.tipo = tipo
-        self.funct7 = funct7
-        self.rs2 = rs2
-        self.rs1 = rs1
-        self.funct3 = funct3
-        self.rd = rd
-        self.opcode = opcode
-        self.immediate = immediate
+    def __init__(self):
+        self.tipo = ''
+        self.funct7 = ''
+        self.rs2 = ''
+        self.rs1 = ''
+        self.funct3 = ''
+        self.rd = ''
+        self.opcode = ''
+        self.immediate = ''
 
 def indentificaComando(instrucao, c):
-    c.immediate = ''
-    c.rs2 = ''
-    c.funct7 = ''
-    c.opcode = ''
+    
 
     match instrucao[0]:
         case 'add' | 'beq' | 'addi' | 'lb' | 'sb' | 'sub':
@@ -26,9 +23,6 @@ def indentificaComando(instrucao, c):
 
         case 'lw' | 'sw':
             c.funct3 = '010'
-
-        case 'sd':
-            c.funct3 = '011'
 
         case 'xor':
             c.funct3 = '100'
@@ -43,14 +37,14 @@ def indentificaComando(instrucao, c):
             c.funct3 = '111'
 
     match instrucao[0]:
-        case 'add' | 'sll' | 'xor' | 'or' | 'and':
+        case 'add' | 'sll' | 'xor' | 'or' | 'and' | 'srl':
             c.funct7 = '0000000'
 
-        case _:
+        case 'sub' | 'sra':
             c.funct7 = '0100000'
 
     match instrucao[0]:
-        case 'add' | 'and' | 'or' | 'slr' | 'sll' | 'sub' | 'xor':
+        case 'add' | 'and' | 'or' | 'slr' | 'sll' | 'sub' | 'xor' | 'srl':
             c.opcode = '0110011'
 
         case 'beq' | 'bne':
@@ -65,16 +59,49 @@ def indentificaComando(instrucao, c):
         case 'andi' | 'ori' | 'addi':
             c.opcode = '0010011'
 
-    
-    for i in range(3):
-        instrucao[i+1] = instrucao[i+1].replace("x", "")
+    for i in range(1,4):
+        instrucao[i] = instrucao[i].replace("x", "")
+    '''
 
-    if(c.tipo == 'r'):
+    c.rs1 = format(int(instrucao[2]), '05b')
 
+    if(c.tipo == 'r' or c.tipo == 'i'):
         c.rd = format(int(instrucao[1]), '05b')
-        c.rs1 = format(int(instrucao[2]), '05b')
-        c.rs2 = format(int(instrucao[3]), '05b')
     
+    if(c.tipo != 'r'):
+        c.immediate = format(int(instrucao[3]), '12b')
+
+    if(c.tipo in ('r', 's', 'b')):
+        instrucao[3].replace("x", "")
+        c.rs2 = format(int(instrucao[3]), '05b')
+    '''
+    def regBin(token):
+        return format(int(token.replace("x", "")), '05b')
+    
+    if c.tipo == 'r':
+        # add rd, rs1, rs2
+        c.rd  = regBin(instrucao[1])
+        c.rs1 = regBin(instrucao[2])
+        c.rs2 = regBin(instrucao[3])
+
+    elif c.tipo == 'i':
+        # addi rd, rs1, imm   OU   lw rd, imm(rs1)
+        c.rd  = regBin(instrucao[1])
+        c.rs1 = regBin(instrucao[2])
+        c.immediate = format(int(instrucao[3]), '012b')
+
+    elif c.tipo == 's':
+        # sw rs2, imm(rs1)    — o que é armazenado é rs2; base é rs1
+        c.rs2 = regBin(instrucao[1])
+        c.rs1 = regBin(instrucao[2])
+        c.immediate = format(int(instrucao[3]), '012b')
+
+    elif c.tipo == 'b':
+        # beq rs1, rs2, imm
+        c.rs1 = regBin(instrucao[1])
+        c.rs2 = regBin(instrucao[2])
+        # imediato de 13 bits (bit 0 implícito = 0)   FIX 6
+        c.immediate = format(int(instrucao[3]), '013b')
 
 #ler nome do arquivo
 nomeArquivo = input("")
@@ -120,6 +147,19 @@ for linha in vetInstrucoes:
             c.tipo = 'b'
 
     indentificaComando(instrucao, c)
-    if(c.tipo == 'r'):
-        print(c.funct7 + c.rs2 + c.rs1 + c.funct3 + c.rd + c.opcode)
 
+    if(c.tipo == 'r'):
+        print(c.funct7 + c.rs2 + c.rs1 + c.funct3 + c.rd, end="")
+    elif(c.tipo == 's'):
+        
+        print(c.immediate[11:5], c.rs2, c.rs1, c.funct3, c.immediate[4:0], end="")
+
+    elif(c.tipo == 'i'):
+        
+        print(c.immediate[11:0], c.rs1, c.funct3, c.rd, end="")
+
+    else:
+        print(c.immediate[12], c.immediate[10:5], c.rs2, c.rs1, c.funct3, c.immediate[4:1], c.immediate[11], end="")
+
+        
+    print(c.opcode)
