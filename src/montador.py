@@ -1,4 +1,5 @@
 import re
+import sys
 
 class Comando:
     def __init__(self):
@@ -102,16 +103,27 @@ def indentificaComando(instrucao, c):
         c.rs2 = format(int(instrucao[2]), "05b")
         c.immediate = format(int(instrucao[3]), '013b')
 
+    
+def printaResultado(c):
+    resultado = ""
+
+    
+
 #ler nome do arquivo
-nomeArquivo = input("")
+nomeArquivo = nomeArquivo = sys.argv[1]
 
 #ler arquivo de entrada
 with open('src/'+nomeArquivo, 'r', encoding='utf-8') as arq:
     instrucoes = arq.read()
-    print(instrucoes)
+    #print(instrucoes)
 
 #dividir linha por \n
 vetInstrucoes = instrucoes.split('\n')
+
+if len(sys.argv) > 2:
+    saida = open('src/' + sys.argv[2], 'w', encoding='utf-8')
+else:
+    saida = sys.stdout
 
 #dividir cada linha com , ou ' '
 for linha in vetInstrucoes:
@@ -144,43 +156,43 @@ for linha in vetInstrucoes:
     indentificaComando(instrucao, c)
 
     if(c.tipo == 'r'):
-        print(c.funct7 + c.rs2 + c.rs1 + c.funct3 + c.rd, end="")
+        print(c.funct7 + c.rs2 + c.rs1 + c.funct3 + c.rd, end="", file=saida)
     elif(c.tipo == 's'):
         i = 11
         while(i >= 5):
-            print(c.immediate[i], end="")
+            print(c.immediate[i], end="", file=saida)
             i = i - 1
 
-        print(c.rs2 + c.rs1 + c.funct3 + c.immediate[4:0], end="")
+        print(c.rs2 + c.rs1 + c.funct3 + c.immediate[4:0], end="", file=saida)
         
         i = 4
 
         while(i >= 0):
-            print(c.immediate[i], end="")
+            print(c.immediate[i], end="", file=saida)
             i = i - 1
         
 
     elif(c.tipo == 'i'):
         
-        print(c.immediate + c.rs1 + c.funct3 + c.rd, end="")
+        print(c.immediate + c.rs1 + c.funct3 + c.rd, end="", file=saida)
 
     else:
-        print(c.immediate[12], end="")
+        print(c.immediate[12], end="", file=saida)
         i = 10
 
         while(i >= 5):
-            print(c.immediate[i], end="")
+            print(c.immediate[i], end="", file=saida)
             i = i - 1
 
-        print(c.rs2 + c.rs1 + c.funct3, end="")
+        print(c.rs2 + c.rs1 + c.funct3, end="", file=saida)
 
         i = 4
 
         while(i >= 1):
-            print(c.immediate[i], end="")
+            print(c.immediate[i], end="", file=saida)
             i = i - 1
 
-        print(c.immediate[11], end="")
+        print(c.immediate[11], end="", file=saida)
 
         
-    print(c.opcode)
+    print(c.opcode, file=saida)
