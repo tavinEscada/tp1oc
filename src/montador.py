@@ -101,13 +101,7 @@ def indentificaComando(instrucao, c):
     elif c.tipo == 'b':
         c.rs1 = format(int(instrucao[1]), "05b")
         c.rs2 = format(int(instrucao[2]), "05b")
-        c.immediate = format(int(instrucao[3]), '013b')
-
-    
-def printaResultado(c):
-    resultado = ""
-
-    
+        c.immediate = format(int(instrucao[3]), '013b')  
 
 #ler nome do arquivo
 nomeArquivo = nomeArquivo = sys.argv[1]
